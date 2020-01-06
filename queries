@@ -1,0 +1,2 @@
+select * from Menu 
+where dish_type = 'Dinner';
