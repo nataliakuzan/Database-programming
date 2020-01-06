@@ -1,74 +1,58 @@
-create table Staff (
-    employeeID varchar2(3) not null constraint staff_pk primary key,
-    employee_name varchar2(25),
-    adress varchar2(50),
-    contact_number varchar2(11)
-);
-
-create table Tables (
-    tableID varchar2(5) not null constraint tables_pk primary key,
-    availability number(1),
-    people_quantity number(1),
-    CONSTRAINT tables_testbool_ischk CHECK (availability IN (1,0))
-);
-/
-create table Reservation (
-    reservationID varchar2(5) not null,
-    tableID varchar2(5) not null,
-    r_date date,
-    r_time timestamp,
-    surname varchar2(25),
-    CONSTRAINT fk_table
-    FOREIGN KEY (tableID)
-    REFERENCES Tables(tableID)
-);
-/
-create table Orders (
-    orderID varchar2(5) not null constraint orders_pk primary key,
-    employeeID varchar2(5),
-    tableID varchar2(5),
-    o_date date,
-    o_time timestamp,
-    total_price decimal(8,2),
-    realized number(1),
-    
-    CONSTRAINT fk_orders_employee
-    FOREIGN KEY (employeeID)
-    REFERENCES Staff(employeeID),
-    
-    CONSTRAINT fk_orders_table
-    FOREIGN KEY (tableID)
-    REFERENCES Tables(tableID),
-    
-    CONSTRAINT orders_testbool_ischk CHECK (realized IN (1,0))
-);
-/
-create table Discounts (
-    discountID varchar2(5) not null constraint discount_pk primary key,
-    d_percent decimal(2,2),
-    d_date date
-);
-/
 create table Menu (
-    dishID varchar2(5) constraint menu_pk primary key,
-    m_name varchar2(25),
-    m_type varchar2(10),
-    description varchar2(255),
+    dish_id varchar2(5) not null constraint menu_pk primary key,
+    dish_name varchar2(25),
+    dish_type varchar2(10),
+    dish_description varchar2(255),
     price decimal(6,2)
 );
 /
-create table OrderedDishes (
-    orderID varchar2(5),
-    dishID varchar2(5),
+create table Staff (
+    employee_id varchar2(3) not null constraint staff_pk primary key,
+    employee_name varchar2(25),
+    contact_number varchar2(11)
+);
+/
+create table Tables (
+    table_id varchar2(5) not null constraint tables_pk primary key,
+    table_availability number(1),
+    people_quantity number(1),
+    constraint tables_testbool_ischk check (table_availability in (1,0))
+);
+/
+create table Reservation (
+    reservation_id varchar2(5) not null,
+    table_id varchar2(5) not null,
+    reservation_date date,
+    reservation_time timestamp,
+    surname varchar2(25),
+    constraint fk_table foreign key (table_id) references Tables(table_id)
+);
+/
+create table Orders (
+    order_id varchar2(5) not null constraint orders_pk primary key,
+    employee_id varchar2(5),
+    table_id varchar2(5),
+    order_date date,
+    order_time timestamp,
+    total_price decimal(8,2),
+    realized number(1),
+    constraint fk_orders_employee foreign key (employee_id) references Staff(employee_id),
+    constraint fk_orders_table foreign key (table_id) references Tables(table_id),
+    constraint orders_testbool_ischk check (realized in (1,0))
+);
+/
+create table Discounts (
+    discount_id varchar2(5) not null constraint discount_pk primary key,
+    discount_percent decimal(2,2),
+    discount_date date
+);
+/
+create table Ordered_Dishes (
+    order_id varchar2(5),
+    dish_id varchar2(5),
     quantity number(5),
-    
-    CONSTRAINT fk_ordereddishes_order
-    FOREIGN KEY (orderID)
-    REFERENCES Orders(orderID),
-    
-    CONSTRAINT fk_ordereddishes_menu
-    FOREIGN KEY (dishID)
-    REFERENCES Menu(dishID),
+    constraint fk_ordereddishes_order foreign key (order_id) references Orders(order_id),
+    constraint fk_ordereddishes_menu foreign key (dish_id) references Menu(dish_id)
 );
 /
 

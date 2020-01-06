@@ -6,22 +6,22 @@ FOR EACH ROW
 DECLARE
 boolean_check number := 0;
 BEGIN
-    FOR table_record IN (SELECT tableID FROM Tables) LOOP
-        IF table_record.tableID = :NEW.tableID THEN
+    FOR table_record IN (SELECT table_id FROM Tables) LOOP
+        IF table_record.table_id = :NEW.table_id THEN
             boolean_check := 1;
         END IF;
     END LOOP;
     IF boolean_check = 0 THEN
-    RAISE_APPLICATION_ERROR(-20000, 'Table with ID: ' || :NEW.tableID ||' does not exist.');
+    RAISE_APPLICATION_ERROR(-20000, 'Table with ID: ' || :NEW.table_id ||' does not exist.');
     END IF;
     
-    FOR reservation_record IN (SELECT tableID, r_date FROM Reservation) LOOP
-        IF reservation_record.tableID = :NEW.tableID 
-            AND EXTRACT(YEAR FROM reservation_record.r_date) = EXTRACT(YEAR FROM :NEW.r_date)
-            AND EXTRACT(MONTH FROM reservation_record.r_date) = EXTRACT(MONTH FROM :NEW.r_date)
-            AND EXTRACT(DAY FROM reservation_record.r_date) = EXTRACT(DAY FROM :NEW.r_date)
-            AND ABS(EXTRACT(HOUR FROM CAST(reservation_record.r_date AS TIMESTAMP)) - EXTRACT(HOUR FROM CAST(:NEW.r_date AS TIMESTAMP))) =< 2 THEN
-            RAISE_APPLICATION_ERROR(-20001, 'Table with ID: ' || :NEW.tableID ||' is already reserved in this time period. Chose another table.');
+    FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) LOOP
+        IF reservation_record.table_id = :NEW.table_id 
+            AND EXTRACT(YEAR FROM reservation_record.reservation_date) = EXTRACT(YEAR FROM :NEW.reservation_date)
+            AND EXTRACT(MONTH FROM reservation_record.reservation_date) = EXTRACT(MONTH FROM :NEW.reservation_date)
+            AND EXTRACT(DAY FROM reservation_record.reservation_date) = EXTRACT(DAY FROM :NEW.reservation_date)
+            AND ABS(EXTRACT(HOUR FROM CAST(reservation_record.reservation_date AS TIMESTAMP)) - EXTRACT(HOUR FROM CAST(:NEW.reservation_date AS TIMESTAMP))) <= 2 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Table with ID: ' || :NEW.table_id ||' is already reserved in this time period. Chose another table.');
         END IF;
     END LOOP;
 END;
