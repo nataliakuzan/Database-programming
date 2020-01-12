@@ -1,2 +1,3 @@
 select * from Menu 
-where dish_type = 'Dinner';
+where dish_type = 'Dinner'
+and price < 20;
