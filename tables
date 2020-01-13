@@ -3,7 +3,8 @@ create table Menu (
     dish_name varchar2(25),
     dish_type varchar2(10),
     dish_description varchar2(255),
-    price decimal(6,2)
+    price decimal(6,2),
+    constraint fk_menu_discounts foreign key (dish_type) references Discounts(dish_type)
 );
 /
 create table Staff (
@@ -42,7 +43,7 @@ create table Orders (
 );
 /
 create table Discounts (
-    discount_id varchar2(5) not null constraint discount_pk primary key,
+    dish_type varchar2(10) not null constraint discount_pk primary key,
     discount_percent decimal(2,2),
     discount_date date
 );
