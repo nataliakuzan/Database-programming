@@ -24,7 +24,6 @@ create table Reservation (
     reservation_id varchar2(5) not null,
     table_id varchar2(5) not null,
     reservation_date date,
-    reservation_time timestamp,
     surname varchar2(25),
     constraint fk_table foreign key (table_id) references Tables(table_id)
 );
