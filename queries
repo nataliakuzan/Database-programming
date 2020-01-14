@@ -20,3 +20,5 @@ WHERE orders IN ( SELECT min(orders)
                         ON (s.employee_id  = o.employee_id)
                          GROUP BY s.employee_id))
 						 
+--4 
+select distinct menu.dish_name, percent_of_dish(ordered_dishes.dish_id, '06/01/2019 18:00:00') from ordered_dishes join menu on (ordered_dishes.dish_id = menu.dish_id);

@@ -1,12 +1,4 @@
-create table Menu (
-    dish_id varchar2(5) not null constraint menu_pk primary key,
-    dish_name varchar2(25),
-    dish_type varchar2(10),
-    dish_description varchar2(255),
-    price decimal(6,2),
-    constraint fk_menu_discounts foreign key (dish_type) references Discounts(dish_type)
-);
-/
+
 create table Staff (
     employee_id varchar2(3) not null constraint staff_pk primary key,
     employee_name varchar2(25),
@@ -45,6 +37,15 @@ create table Discounts (
     dish_type varchar2(10) not null constraint discount_pk primary key,
     discount_percent decimal(2,2),
     discount_date date
+);
+/
+create table Menu (
+    dish_id varchar2(5) not null constraint menu_pk primary key,
+    dish_name varchar2(25),
+    dish_type varchar2(10),
+    dish_description varchar2(255),
+    price decimal(6,2),
+    constraint fk_menu_discounts foreign key (dish_type) references Discounts(dish_type)
 );
 /
 create table Ordered_Dishes (

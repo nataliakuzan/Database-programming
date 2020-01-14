@@ -33,3 +33,35 @@ RETURN v_total_price;
 END;
 
 UPDATE orders SET total_price = price_of_order(order_id) where total_price = 0;
+
+
+CREATE OR REPLACE Function percent_of_dish
+   (v_dish_id IN ordered_dishes.dish_id%TYPE, v_order_date IN orders.order_date%TYPE)
+   RETURN number
+IS
+    v_percent number;
+    v_all number;
+    v_number_of_dish number;
+BEGIN
+    SELECT sum_all INTO v_all
+    FROM ( SELECT sum(quantity) as sum_all
+            FROM orders JOIN ordered_dishes
+            ON (orders.order_id=ordered_dishes.order_id)
+            WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM v_order_date)
+            AND EXTRACT(MONTH FROM order_date) = EXTRACT(MONTH FROM v_order_date)
+            AND EXTRACT(DAY FROM order_date) = EXTRACT(DAY FROM v_order_date));
+            
+    SELECT sum_dishes INTO v_number_of_dish
+    FROM ( SELECT sum(quantity) as sum_dishes
+            FROM orders JOIN ordered_dishes
+            ON (orders.order_id=ordered_dishes.order_id)
+            WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM v_order_date)
+            AND EXTRACT(MONTH FROM order_date) = EXTRACT(MONTH FROM v_order_date)
+            AND EXTRACT(DAY FROM order_date) = EXTRACT(DAY FROM v_order_date)
+            AND ordered_dishes.dish_id = v_dish_id);
+            
+       v_percent :=      v_number_of_dish / v_all;
+       RETURN ROUND(v_percent, 2);
+END;
+
+   
