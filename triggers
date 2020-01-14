@@ -47,3 +47,24 @@ AFTER INSERT OR UPDATE ON ORDERED_DISHES
 BEGIN
 UPDATE orders SET total_price = price_of_order(order_id) where order_id > 0;
 END;
+
+CREATE TABLE audit_table
+(old_dish_name varchar2(25),
+ new_dish_name varchar2(25),
+ old_price decimal(6,2),
+ new_price decimal(6,2),
+ date_of_change TIMESTAMP DEFAULT SYSTIMESTAMP);
+ 
+CREATE OR REPLACE TRIGGER audit_menu
+AFTER INSERT OR UPDATE OR DELETE ON menu
+FOR EACH ROW
+WHEN (NEW.dish_name <> OLD.dish_name or NEW.price <> OLD.price 
+OR (NEW.dish_name IS NOT NULL AND OLD.dish_name IS NOT NULL) 
+OR (NEW.price IS NOT NULL AND OLD.price IS NOT NULL))
+BEGIN
+   INSERT INTO audit_table(old_dish_name,new_dish_name,old_price,new_price)
+   VALUES(:OLD.dish_name, :NEW.dish_name, :OLD.price, :NEW.price);
+END;
+/
+
+UPDATE menu SET dish_name = 'Pizza Prosciutto' where dish_id = 1;

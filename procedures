@@ -18,20 +18,42 @@ BEGIN
 END assign_waiter_for_order;
 
 
-CREATE OR REPLACE Function price_of_order
+CREATE OR REPLACE PROCEDURE realize_order (id_order IN orders.order_id%TYPE)
+IS
+no_update_exception EXCEPTION;
+BEGIN
+  
+  UPDATE orders SET realized = 1 
+  WHERE order_id = id_order
+  AND total_price > 0;
+  
+  IF SQL%NOTFOUND THEN 
+    RAISE no_update_exception;
+  END IF;
+  dbms_output.put_line('Order was paid.');
+  
+  EXCEPTION
+  WHEN no_update_exception THEN
+       dbms_output.put_line('Error : Given order id '||id_order||' is invalid.');
+
+END realize_order;
+/
+
+CREATE OR REPLACE FUNCTION price_of_order
    ( v_order_id IN ordered_dishes.order_id%TYPE )
    RETURN number
 IS
    v_total_price number;
 BEGIN
   SELECT total_price_of_meal INTO v_total_price
-      FROM (SELECT sum(price*quantity) AS total_price_of_meal
-        FROM ordered_dishes JOIN menu
-        ON (ordered_dishes.dish_id = menu.dish_id)
-        WHERE order_id = v_order_id);
+      FROM (SELECT sum((m.price - m.price*d.discount_percent)*od.quantity) AS total_price_of_meal
+        FROM menu m 
+        JOIN ordered_dishes od ON (m.dish_id = od.dish_id)
+        JOIN discounts d ON (m.dish_type = d.dish_type)
+        WHERE od.order_id = v_order_id);
 RETURN v_total_price;
 END;
-
+/
 UPDATE orders SET total_price = price_of_order(order_id) where total_price = 0;
 
 
