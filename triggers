@@ -26,3 +26,24 @@ BEGIN
     END LOOP;
 END;
 /
+
+CREATE OR REPLACE TRIGGER CHANGE_TOTAL_PRICE
+AFTER INSERT OR UPDATE ON ORDERED_DISHES
+FOR EACH ROW
+DECLARE
+v_total_price NUMBER;
+BEGIN
+SELECT total_price_of_meal INTO v_total_price
+      FROM (SELECT sum(price*quantity) AS total_price_of_meal
+        FROM ordered_dishes JOIN menu
+        ON (ordered_dishes.dish_id = menu.dish_id)
+        WHERE order_id = :NEW.order_id);
+UPDATE orders SET total_price = v_total_price WHERE order_id = :NEW.order_id;
+END;
+
+--EWENTUALNIE TAK, ALE TO MAŁO WYDAJNE
+CREATE OR REPLACE TRIGGER CHANGE_TOTAL_PRICE
+AFTER INSERT OR UPDATE ON ORDERED_DISHES
+BEGIN
+UPDATE orders SET total_price = price_of_order(order_id) where order_id > 0;
+END;

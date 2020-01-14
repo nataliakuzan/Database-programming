@@ -16,3 +16,20 @@ BEGIN
          DBMS_OUTPUT.put_line('Waiter with id ' || staff_id || ' was assigned to ' || sql%ROWCOUNT || ' of new orders.');
       END IF;
 END assign_waiter_for_order;
+
+
+CREATE OR REPLACE Function price_of_order
+   ( v_order_id IN ordered_dishes.order_id%TYPE )
+   RETURN number
+IS
+   v_total_price number;
+BEGIN
+  SELECT total_price_of_meal INTO v_total_price
+      FROM (SELECT sum(price*quantity) AS total_price_of_meal
+        FROM ordered_dishes JOIN menu
+        ON (ordered_dishes.dish_id = menu.dish_id)
+        WHERE order_id = v_order_id);
+RETURN v_total_price;
+END;
+
+UPDATE orders SET total_price = price_of_order(order_id) where total_price = 0;

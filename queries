@@ -1,3 +1,22 @@
+--1 All the dinners which are more expensive than 20
 select * from Menu 
 where dish_type = 'Dinner'
 and price < 20;
+
+--2 Money earned at 06/01/2019
+SELECT sum(total_price)
+FROM orders
+WHERE EXTRACT(DAY FROM order_date) = 6 AND EXTRACT(MONTH FROM order_date) = 1 AND EXTRACT(YEAR FROM order_date) = 2019;
+
+--3 Contact number of the most lazy employee (with the lowest amount of orders :))
+SELECT employee_name, contact_number
+FROM (SELECT s.employee_id as emp_id, COUNT(o.employee_id) as orders, contact_number, employee_name
+        FROM staff s JOIN orders o
+        ON (s.employee_id  = o.employee_id)
+        GROUP BY s.employee_id, contact_number, employee_name) subquery
+WHERE orders IN ( SELECT min(orders)
+                FROM (SELECT s.employee_id as emp_id, COUNT(o.employee_id) as orders
+                        FROM staff s JOIN orders o
+                        ON (s.employee_id  = o.employee_id)
+                         GROUP BY s.employee_id))
+						 
