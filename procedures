@@ -86,4 +86,43 @@ BEGIN
        RETURN ROUND(v_percent, 2);
 END;
 
+create or replace PROCEDURE reservation_for_a_party (number_of_people IN number, v_date_of_reservation IN date) IS
+number_of_free_places number;
+table_quantity number;
+number_of_reserved_places number;
+v_reservation_id number;
+BEGIN
+FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) LOOP
+
+        IF( EXTRACT(YEAR FROM reservation_record.reservation_date) = EXTRACT(YEAR FROM v_date_of_reservation)
+            AND EXTRACT(MONTH FROM reservation_record.reservation_date) = EXTRACT(MONTH FROM v_date_of_reservation)
+            AND EXTRACT(DAY FROM reservation_record.reservation_date) = EXTRACT(DAY FROM v_date_of_reservation) ) THEN
+                        
+        SELECT people_quantity INTO table_quantity
+        FROM (SELECT people_quantity
+                FROM tables
+                where table_id = reservation_record.table_id);
+        
+        number_of_free_places := number_of_free_places + table_quantity;
+        
+    END IF;
+END LOOP;
+number_of_free_places := 72 -number_of_free_places;
+
+IF(number_of_people > number_of_free_places) THEN
+DBMS_OUTPUT.put_line('In this date there is not enought place for such a big party');
+ELSE
+FOR tables_record IN (SELECT table_id, people_quantity FROM Tables) LOOP
+    number_of_reserved_places := number_of_reserved_places + tables_record.people_quantity;
+    
+    SELECT sum_of_reservation INTO v_reservation_id
+    FROM ( SELECT count(*) as sum_of_reservation
+            FROM Reservation);
+    INSERT INTO RESERVATION (RESERVATION_ID, TABLE_ID, RESERVATION_DATE)
+    VALUES (v_reservation_id, tables_record.table_id,  v_date_of_reservation);
+    IF(number_of_reserved_places >= number_of_people) THEN EXIT;
+    END IF;
+END LOOP;
+END IF;
+END;
    
