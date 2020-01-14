@@ -27,6 +27,8 @@ BEGIN
 END;
 /
 
+/* NOT WORKING
+
 CREATE OR REPLACE TRIGGER CHANGE_TOTAL_PRICE
 AFTER INSERT OR UPDATE ON ORDERED_DISHES
 FOR EACH ROW
@@ -39,9 +41,9 @@ SELECT total_price_of_meal INTO v_total_price
         ON (ordered_dishes.dish_id = menu.dish_id)
         WHERE order_id = :NEW.order_id);
 UPDATE orders SET total_price = v_total_price WHERE order_id = :NEW.order_id;
-END;
+END;*/
 
---EWENTUALNIE TAK, ALE TO MAŁO WYDAJNE
+--WORKING
 CREATE OR REPLACE TRIGGER CHANGE_TOTAL_PRICE
 AFTER INSERT OR UPDATE ON ORDERED_DISHES
 BEGIN

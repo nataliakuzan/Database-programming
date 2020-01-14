@@ -87,10 +87,11 @@ BEGIN
 END;
 
 create or replace PROCEDURE reservation_for_a_party (number_of_people IN number, v_date_of_reservation IN date) IS
-number_of_free_places number;
-table_quantity number;
-number_of_reserved_places number;
+number_of_free_places number := 0;
+table_quantity number := 0;
+number_of_reserved_places number := 0;
 v_reservation_id number;
+number_of_places_in_restaurant number := 0;
 BEGIN
 FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) LOOP
 
@@ -102,19 +103,20 @@ FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) L
         FROM (SELECT people_quantity
                 FROM tables
                 where table_id = reservation_record.table_id);
-        
         number_of_free_places := number_of_free_places + table_quantity;
-        
     END IF;
 END LOOP;
-number_of_free_places := 72 -number_of_free_places;
+
+SELECT sum_of_places INTO number_of_places_in_restaurant
+FROM ( SELECT sum(people_quantity) as sum_of_places
+        FROM Tables);
+number_of_free_places := number_of_places_in_restaurant - number_of_free_places;
 
 IF(number_of_people > number_of_free_places) THEN
 DBMS_OUTPUT.put_line('In this date there is not enought place for such a big party');
 ELSE
 FOR tables_record IN (SELECT table_id, people_quantity FROM Tables) LOOP
     number_of_reserved_places := number_of_reserved_places + tables_record.people_quantity;
-    
     SELECT sum_of_reservation INTO v_reservation_id
     FROM ( SELECT count(*) as sum_of_reservation
             FROM Reservation);
