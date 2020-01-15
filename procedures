@@ -56,6 +56,39 @@ END;
 /
 UPDATE orders SET total_price = price_of_order(order_id) where total_price = 0;
 
+CREATE OR REPLACE FUNCTION final_price
+   ( v_order_id IN ordered_dishes.order_id%TYPE )
+   RETURN number
+IS
+    CURSOR dish_cursor IS
+        SELECT dish_id, quantity FROM ordered_dishes WHERE order_id = v_order_id;
+    m_price menu.price%TYPE;
+    d_discount_percent discounts.discount_percent%TYPE;
+    d_discount_date discounts.discount_date%TYPE;
+    v_result orders.total_price%TYPE := 0;
+    o_date orders.order_date%TYPE;
+BEGIN
+
+  SELECT order_date INTO o_date FROM orders
+  WHERE order_id = v_order_id;
+  
+    FOR dish_rec in dish_cursor LOOP
+        SELECT m.price, d.discount_percent, d.discount_date
+        INTO m_price, d_discount_percent, d_discount_date
+        FROM menu m, discounts d
+        WHERE m.dish_type = d.dish_type
+        AND m.dish_id = dish_rec.dish_id;
+
+        IF d_discount_date>o_date THEN
+            v_result:= v_result+ ((m_price - m_price*d_discount_percent) * dish_rec.quantity);
+        ELSE
+            v_result:= v_result+ (m_price * dish_rec.quantity);
+        END IF;
+    END LOOP;
+    RETURN v_result;
+END final_price;
+/
+
 
 CREATE OR REPLACE Function percent_of_dish
    (v_dish_id IN ordered_dishes.dish_id%TYPE, v_order_date IN orders.order_date%TYPE)
