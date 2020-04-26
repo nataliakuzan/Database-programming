@@ -125,13 +125,14 @@ table_quantity number := 0;
 number_of_reserved_places number := 0;
 v_reservation_id number;
 number_of_places_in_restaurant number := 0;
+check_reservtion number :=0;
 BEGIN
 FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) LOOP
 
         IF( EXTRACT(YEAR FROM reservation_record.reservation_date) = EXTRACT(YEAR FROM v_date_of_reservation)
             AND EXTRACT(MONTH FROM reservation_record.reservation_date) = EXTRACT(MONTH FROM v_date_of_reservation)
             AND EXTRACT(DAY FROM reservation_record.reservation_date) = EXTRACT(DAY FROM v_date_of_reservation) ) THEN
-                        
+
         SELECT people_quantity INTO table_quantity
         FROM (SELECT people_quantity
                 FROM tables
@@ -148,15 +149,33 @@ number_of_free_places := number_of_places_in_restaurant - number_of_free_places;
 IF(number_of_people > number_of_free_places) THEN
 DBMS_OUTPUT.put_line('In this date there is not enought place for such a big party');
 ELSE
-FOR tables_record IN (SELECT table_id, people_quantity FROM Tables) LOOP
-    number_of_reserved_places := number_of_reserved_places + tables_record.people_quantity;
+FOR tables_record IN (SELECT tables.table_id, tables.people_quantity FROM Tables WHERE table_id<17) LOOP
+    FOR reservation_record IN (SELECT table_id, reservation_date FROM Reservation) LOOP
+        IF (reservation_record.table_id = tables_record.table_id 
+            AND EXTRACT(YEAR FROM reservation_record.reservation_date) = EXTRACT(YEAR FROM v_date_of_reservation)
+            AND EXTRACT(MONTH FROM reservation_record.reservation_date) = EXTRACT(MONTH FROM v_date_of_reservation)
+            AND EXTRACT(DAY FROM reservation_record.reservation_date) = EXTRACT(DAY FROM v_date_of_reservation)) THEN
+            check_reservtion :=1;
+        END IF;
+    END LOOP;        
+            
+    IF(check_reservtion = 1) THEN      
+    DBMS_OUTPUT.put_line('THIS TBALE IS RESERVED. WE WILL TRY TO CHOSE ANOTHER TABLE ' || tables_record.table_id);
+    ELSE
+    
     SELECT sum_of_reservation INTO v_reservation_id
     FROM ( SELECT count(*) as sum_of_reservation
             FROM Reservation);
-    INSERT INTO RESERVATION (RESERVATION_ID, TABLE_ID, RESERVATION_DATE)
-    VALUES (v_reservation_id, tables_record.table_id,  v_date_of_reservation);
+            
+    INSERT INTO RESERVATION (RESERVATION_ID, TABLE_ID, RESERVATION_DATE, SURNAME)
+    VALUES (v_reservation_id, tables_record.table_id,  v_date_of_reservation, 'party');
+        
+    number_of_reserved_places := number_of_reserved_places + tables_record.people_quantity;
+    
     IF(number_of_reserved_places >= number_of_people) THEN EXIT;
     END IF;
+    END IF;
+    check_reservtion :=0;
 END LOOP;
 END IF;
 END;
